@@ -414,6 +414,36 @@ bind_mount (int           proc_fd,
       return BIND_MOUNT_ERROR_REOPEN_DEST;
     }
 
+  struct mount_attr attr = {
+    .attr_clr = 0,
+    .attr_set = MOUNT_ATTR_NOSUID,
+  };
+
+  if (!devices)
+    attr.attr_set |= MOUNT_ATTR_NODEV;
+
+  if (readonly)
+    attr.attr_set |= MOUNT_ATTR_RDONLY;
+
+  unsigned int setattr_flags = AT_EMPTY_PATH;
+
+  if (recursive)
+      setattr_flags |= AT_RECURSIVE;
+
+  if (mount_setattr_wrapper (dest_fd, "", setattr_flags, &attr, sizeof(attr)) == 0)
+    {
+      return BIND_MOUNT_SUCCESS;
+    }
+  else if (errno != ENOSYS)
+    {
+      if (failing_path != NULL)
+        *failing_path = steal_pointer (&resolved_dest);
+
+      return BIND_MOUNT_ERROR_MOUNT_SETATTR;
+    }
+
+  /* mount_setattr(2) isn't available, so we'll have to do this the hard way: */
+
   /* If we are in a case-insensitive filesystem, mountinfo might contain a
    * different case combination of the path we requested to mount.
    * This is due to the fact that the kernel, as of the beginning of 2021,
@@ -543,6 +573,10 @@ bind_mount_result_to_string (bind_mount_result res,
                             failing_path);
         break;
 
+      case BIND_MOUNT_ERROR_MOUNT_SETATTR:
+        string = xasprintf ("mount_setattr() failed at \"%s\"", failing_path);
+        break;
+
       case BIND_MOUNT_SUCCESS:
         string = xstrdup ("Success");
         break;
@@ -596,6 +630,7 @@ die_with_bind_result (bind_mount_result res,
           case BIND_MOUNT_ERROR_REOPEN_DEST:
           case BIND_MOUNT_ERROR_READLINK_DEST_PROC_FD:
           case BIND_MOUNT_ERROR_FIND_DEST_MOUNT:
+          case BIND_MOUNT_ERROR_MOUNT_SETATTR:
           case BIND_MOUNT_SUCCESS:
           default:
             fprintf (stderr, ": %s", strerror (saved_errno));

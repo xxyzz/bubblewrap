@@ -38,6 +38,7 @@ typedef enum
   BIND_MOUNT_ERROR_FIND_DEST_MOUNT,
   BIND_MOUNT_ERROR_REMOUNT_DEST,
   BIND_MOUNT_ERROR_REMOUNT_SUBMOUNT,
+  BIND_MOUNT_ERROR_MOUNT_SETATTR,
 } bind_mount_result;
 
 bind_mount_result bind_mount (int           proc_fd,
