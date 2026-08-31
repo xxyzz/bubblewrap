@@ -311,7 +311,11 @@ class TestSandbox(unittest.TestCase):
         self._test_ro_bind_root_is_recursive()
 
     @in_sandbox('--debug-opt=force-mount-setattr-fallback')
-    def test_ro_bind_root_is_recursive_fallback(self):
+    def test_ro_bind_root_is_recursive_mount_setattr_fallback(self):
+        self._test_ro_bind_root_is_recursive()
+
+    @in_sandbox('--debug-opt=force-mount-fallback')
+    def test_ro_bind_root_is_recursive_mount_fallback(self):
         self._test_ro_bind_root_is_recursive()
 
     def _test_ro_bind_root_is_recursive(self):

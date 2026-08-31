@@ -2722,6 +2722,8 @@ parse_args_recurse (int          *argcp,
             opt_force_openat_fallback = true;
           else if (strcmp (val, "force-mount-setattr-fallback") == 0)
             opt_force_mount_setattr_fallback = true;
+          else if (strcmp (val, "force-mount-fallback") == 0)
+            opt_force_mount_fallback = true;
           else
             die ("Unknown --debug-opt value: %s", val);
         }
